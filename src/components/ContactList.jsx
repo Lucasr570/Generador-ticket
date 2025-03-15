@@ -11,7 +11,6 @@ const ContactList = ({ contacts, onDelete, selectedContact, setSelectedContact, 
       return;
     }
     
-
     let message = `*Ticket para ${contacts[selectedContact].name}*\n\n`;
 
     ticket.detalles.forEach(item => {
@@ -24,22 +23,22 @@ const ContactList = ({ contacts, onDelete, selectedContact, setSelectedContact, 
 
   // Función para enviar el ticket por WhatsApp
   const sendTicketToWhatsApp = () => {
-    console.log('selectedContact:', selectedContact);
-    console.log("ticket en ContactList:", ticket);
-
     const message = generateWhatsAppMessage();
     if (message) {
       const phone = contacts[selectedContact].phone;
       const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-      window.open(url, "_blank"); // Abre WhatsApp con el mensaje
+      window.open(url, "_blank");
     } else {
       alert("Por favor, selecciona un contacto y genera un ticket.");
     }
   };
-  
+
+  // Condiciones para habilitar los botones
+  const isSendValid = ticket && selectedContact !== null && selectedContact >= 0;
+  const isDeleteValid = selectedContact !== null && selectedContact >= 0;
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
+    <Card className="bg-neutral-200 w-full max-w-4xl mx-auto">
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-center">Contactos</CardTitle>
       </CardHeader>
@@ -51,10 +50,9 @@ const ContactList = ({ contacts, onDelete, selectedContact, setSelectedContact, 
           onChange={(e) => {
             const selectedPhone = e.target.value;
             const selectedIndex = contacts.findIndex((contact) => contact.phone === selectedPhone);
-            setSelectedContact(selectedIndex); // Actualizar el contacto seleccionado
+            setSelectedContact(selectedIndex);
           }}
         >
-
           <option value="">Selecciona un contacto</option>
           {contacts.map((contact, index) => (
             <option key={index} value={contact.phone}>
@@ -63,21 +61,33 @@ const ContactList = ({ contacts, onDelete, selectedContact, setSelectedContact, 
           ))}
         </select>
 
-        {/* Botón para eliminar el contacto seleccionado */}
-        {contacts.length > 0 && selectedContact !== null && (
-          <Button onClick={onDelete}>Eliminar</Button>
-        )}
+        {/* Contenedor de botones con separación */}
+        <div className="flex gap-4">
+          <Button 
+            onClick={onDelete} 
+            disabled={!isDeleteValid}
+            className={`${isDeleteValid 
+              ? 'bg-red-500 hover:bg-red-600' 
+              : 'bg-gray-500 hover:bg-gray-600'}`}
+          >
+            Eliminar
+          </Button>
 
-        {/* Botón para enviar el ticket por WhatsApp */}
-        <Button onClick={sendTicketToWhatsApp}>
-          Enviar Ticket
-        </Button>
+          <Button 
+            onClick={sendTicketToWhatsApp} 
+            disabled={!isSendValid}
+            className={`${isSendValid 
+              ? 'bg-green-500 hover:bg-green-600' 
+              : 'bg-gray-600 hover:bg-gray-700'}`}
+          >
+            Enviar Ticket
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
 };
 
-// Validación de las propiedades
 ContactList.propTypes = {
   contacts: PropTypes.arrayOf(
     PropTypes.shape({
@@ -86,7 +96,7 @@ ContactList.propTypes = {
     })
   ).isRequired,
   onDelete: PropTypes.func.isRequired,
-  selectedContact: PropTypes.number,  // Puede ser null si no se seleccionó nada
+  selectedContact: PropTypes.number,
   setSelectedContact: PropTypes.func.isRequired,
   ticket: PropTypes.shape({
     detalles: PropTypes.arrayOf(

@@ -1,4 +1,3 @@
-
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -9,6 +8,7 @@ import { Button } from "@/components/ui/button"
 export default function CalculadoraDeTicket({ onTicketGenerated }) {
   const [detalles, setDetalles] = useState([])
   const [siguienteId, setSiguienteId] = useState(1)
+  const [ticketGenerado, setTicketGenerado] = useState(false)
 
   const agregarNuevoDetalle = () => {
     const nuevoDetalle = {
@@ -34,37 +34,39 @@ export default function CalculadoraDeTicket({ onTicketGenerated }) {
   }
 
   const calcularItemDetalle = (item) => {
-    const tasaPorcentaje = item.resultado === 'win' ? 0.10 : item.resultado === 'lose' ? 0.05 : 0;
-    const montoPorcentaje = item.monto * tasaPorcentaje;
-  
-    let subtotal;
-  
+    const tasaPorcentaje = item.resultado === 'win' ? 0.10 : item.resultado === 'lose' ? 0.05 : 0
+    const montoPorcentaje = item.monto * tasaPorcentaje
+
+    let subtotal
     if (item.resultado === 'win') {
-      subtotal = (item.monto * 2) - montoPorcentaje; // Doble el monto menos el porcentaje
+      subtotal = (item.monto * 2) - montoPorcentaje
     } else if (item.resultado === 'lose') {
-      subtotal = 0; // Cuando pierde, el subtotal es 0
+      subtotal = 0
     } else {
-      subtotal = item.monto - montoPorcentaje; // Si no se ha seleccionado, calcula normalmente
+      subtotal = item.monto - montoPorcentaje
     }
-  
-    return { ...item, porcentaje: montoPorcentaje, subtotal };
+
+    return { ...item, porcentaje: montoPorcentaje, subtotal }
   }
   
   const montoTotal = detalles.reduce((suma, item) => suma + item.subtotal, 0)
 
-  const generarTicket = () => {
-    // Crear el objeto de ticket con los detalles y monto total
-    const ticketGenerado = {
+  // Validar si todos los campos están llenos
+  const isFormValid = detalles.length > 0 && detalles.every(item => 
+    item.detalle.trim() !== '' && item.monto > 0 && item.resultado !== ''
+  )
+
+  const handleGenerarTicket = () => {
+    const ticketGeneradoObj = {
       detalles,
       montoTotal
-    };
-
-    // Llamar a la función onTicketGenerated para pasar el ticket generado al componente principal
-    onTicketGenerated(ticketGenerado);
-  };
+    }
+    setTicketGenerado(true)
+    onTicketGenerated(ticketGeneradoObj)
+  }
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
+    <Card className="bg-neutral-200 w-full max-w-4xl mx-auto mb-4">
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-center"> Ticket</CardTitle>
       </CardHeader>
@@ -141,8 +143,23 @@ export default function CalculadoraDeTicket({ onTicketGenerated }) {
             )}
           </TableBody>
         </Table>
-        <Button onClick={agregarNuevoDetalle}>Agregar Detalle</Button>
-        <Button onClick={generarTicket}>Generar Ticket</Button>
+
+        {/* Contenedor de botones con espacio entre ellos */}
+        <div className="flex gap-4">
+          <Button 
+            onClick={agregarNuevoDetalle} 
+            className={detalles.length === 0 ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-500 hover:bg-gray-600'}
+          >
+            Agregar Detalle
+          </Button>
+
+          <Button 
+            onClick={handleGenerarTicket} 
+            className={`${isFormValid ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-500 hover:bg-gray-600'}`}
+          >
+            {ticketGenerado ? 'Tícket generado' : 'Generar Ticket'}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   )
