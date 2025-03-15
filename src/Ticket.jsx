@@ -104,12 +104,16 @@ export default function CalculadoraDeTicket({ onTicketGenerated }) {
                     value={item.resultado} 
                     onValueChange={(valor) => actualizarDetalle(item.id, 'resultado', valor)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger 
+                      className={`transition-colors duration-200 ${item.resultado === 'win' ? 'bg-green-500': item.resultado === 'lose'? 'bg-red-500': '' }`}
+                    >
                       <SelectValue placeholder="Seleccione" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="win">Gana</SelectItem>
-                      <SelectItem value="lose">Pierde</SelectItem>
+                      <SelectItem className={'bg-gray-500'} 
+                        value="win">Gana</SelectItem>
+                      <SelectItem className={'bg-gray-500'} 
+                        value="lose">Pierde</SelectItem>
                     </SelectContent>
                   </Select>
                 </TableCell>
